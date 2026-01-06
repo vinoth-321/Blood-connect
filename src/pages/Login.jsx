@@ -3,16 +3,18 @@ import { api } from "../api";
 import Input from "../components/Input";
 import Button from "../components/Button";
 import Error from "../components/Error";
-import { useNavigate } from "react-router-dom";
-import { Link } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 export default function Login() {
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const navigate = useNavigate(); // ✅ MUST be here
+
   const loginUser = async () => {
     setError("");
+
     if (!form.email || !form.password) {
       return setError("Both fields are required");
     }
@@ -27,9 +29,11 @@ export default function Login() {
       }
 
       const token = res.data.token;
+
       localStorage.setItem("token", token);
       localStorage.setItem("userId", res.data.userId);
 
+      // 📍 Update location (non-blocking)
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           async (pos) => {
@@ -41,7 +45,9 @@ export default function Login() {
                   longitude: pos.coords.longitude,
                 },
                 {
-                  headers: { Authorization: `Bearer ${token}` },
+                  headers: {
+                    Authorization: `Bearer ${token}`,
+                  },
                 }
               );
             } catch {
@@ -49,17 +55,22 @@ export default function Login() {
             }
           },
           () => {
-            console.warn("User denied location");
+            console.warn("User denied location access");
           }
         );
       }
-    const navigate = useNavigate();
-     navigate(
-      res.data.profileCompleted ? "/home" : "/complete-profile"
-    );
+
+      // ✅ Proper navigation
+      navigate(
+        res.data.profileCompleted ? "/home" : "/complete-profile"
+      );
 
     } catch (err) {
-      setError(err);
+      setError(
+        err.response?.data?.msg ||
+        err.response?.data?.message ||
+        "Login failed"
+      );
     } finally {
       setLoading(false);
     }
@@ -69,7 +80,7 @@ export default function Login() {
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-red-50 px-6 py-12">
       <div className="max-w-6xl mx-auto bg-white rounded-3xl shadow-2xl grid grid-cols-1 md:grid-cols-2 overflow-hidden">
 
-        {/* LEFT SIDE — FULL IMAGE */}
+        {/* LEFT IMAGE */}
         <div
           className="hidden md:block relative"
           style={{
@@ -91,10 +102,9 @@ export default function Login() {
           </div>
         </div>
 
-        {/* RIGHT SIDE — LOGIN FORM */}
+        {/* LOGIN FORM */}
         <div className="flex items-center justify-center px-10 py-16">
           <div className="w-full max-w-sm">
-
             <h2 className="text-3xl font-bold text-gray-800 mb-2">
               Donor Login
             </h2>
@@ -135,12 +145,10 @@ export default function Login() {
               >
                 Register
               </Link>
-
             </p>
 
           </div>
         </div>
-
       </div>
     </div>
   );
