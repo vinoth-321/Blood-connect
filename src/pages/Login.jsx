@@ -59,7 +59,7 @@ export default function Login() {
     );
 
     } catch (err) {
-      setError("Login failed");
+      setError(err);
     } finally {
       setLoading(false);
     }
