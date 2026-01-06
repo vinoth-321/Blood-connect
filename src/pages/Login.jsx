@@ -3,6 +3,8 @@ import { api } from "../api";
 import Input from "../components/Input";
 import Button from "../components/Button";
 import Error from "../components/Error";
+import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 export default function Login() {
   const [form, setForm] = useState({ email: "", password: "" });
@@ -51,10 +53,10 @@ export default function Login() {
           }
         );
       }
-
-      window.location.href = res.data.profileCompleted
-        ? "/home"
-        : "/complete-profile";
+    const navigate = useNavigate();
+     navigate(
+      res.data.profileCompleted ? "/home" : "/complete-profile"
+    );
 
     } catch (err) {
       setError("Login failed");
@@ -127,12 +129,13 @@ export default function Login() {
 
             <p className="text-center text-sm text-gray-600 mt-8">
               New donor?{" "}
-              <a
-                href="/register"
+              <Link
+                to="/register"
                 className="text-red-600 font-semibold hover:underline"
               >
                 Register
-              </a>
+              </Link>
+
             </p>
 
           </div>
